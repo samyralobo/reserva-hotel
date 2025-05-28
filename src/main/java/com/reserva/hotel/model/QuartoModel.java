@@ -66,4 +66,6 @@ public class QuartoModel {
     public void setReserva(List<ReservaModel> reserva) {
         this.reserva = reserva;
     }
+
+
 }

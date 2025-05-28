@@ -31,7 +31,7 @@ public class ReservaService {
             Optional<QuartoModel> quarto = quartoRepository.findById(id_quarto);
 
             if (quarto.isPresent()){
-                reserva.setQuarto(quarto);
+                reserva.setQuarto(quarto.get());
             }else {
                 System.out.println("ERRO! Quarto indisponível!");
             }

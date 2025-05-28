@@ -26,11 +26,13 @@ public class ReservaModel {
 
     @ManyToOne
     @JoinColumn(name = "quarto_id")
-    private Optional<QuartoModel> quarto;
+    private QuartoModel quarto;
 
-    @OneToMany
-    @JoinColumn(name = "hotel")
+
+    @ManyToOne
+    @JoinColumn(name = "hotel_id")
     private HotelModel hotel;
+
 
     public Long getId() {
         return id;
@@ -72,11 +74,19 @@ public class ReservaModel {
         this.dataSaida = dataSaida;
     }
 
-    public Optional<QuartoModel> getQuarto() {
+    public QuartoModel getQuarto() {
         return quarto;
     }
 
-    public void setQuarto(Optional<QuartoModel> quarto) {
+    public void setQuarto(QuartoModel quarto) {
         this.quarto = quarto;
+    }
+
+    public HotelModel getHotel() {
+        return hotel;
+    }
+
+    public void setHotel(HotelModel hotel) {
+        this.hotel = hotel;
     }
 }

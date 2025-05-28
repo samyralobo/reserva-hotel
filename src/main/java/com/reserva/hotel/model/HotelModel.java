@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Entity
 @Table(name = "TB_HOTEL")
@@ -21,6 +22,10 @@ public class HotelModel {
 
     @OneToMany(mappedBy = "hotel", cascade = CascadeType.ALL)
     private List<QuartoModel> quartos = new ArrayList<>();
+
+    @OneToMany(mappedBy = "hotel")
+    private List<ReservaModel> reservas;
+
 
     public Long getId() {
         return id;
@@ -46,11 +51,5 @@ public class HotelModel {
         this.endereco = endereco;
     }
 
-    public List<QuartoModel> getQuartos() {
-        return quartos;
-    }
 
-    public void setQuartos(List<QuartoModel> quartos) {
-        this.quartos = quartos;
-    }
 }

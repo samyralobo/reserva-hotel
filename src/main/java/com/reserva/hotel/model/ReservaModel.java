@@ -33,6 +33,13 @@ public class ReservaModel {
     @JoinColumn(name = "hotel_id")
     private HotelModel hotel;
 
+    public ReservaModel(Long id, String nomeCliente, String email, LocalDateTime dataEntrada, LocalDateTime dataSaida) {
+        this.id = id;
+        this.nomeCliente = nomeCliente;
+        this.email = email;
+        this.dataEntrada = dataEntrada;
+        this.dataSaida = dataSaida;
+    }
 
     public Long getId() {
         return id;

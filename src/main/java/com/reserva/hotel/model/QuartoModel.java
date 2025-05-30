@@ -27,6 +27,12 @@ public class QuartoModel {
     @OneToMany(mappedBy = "quarto", cascade = CascadeType.ALL)
     private List<ReservaModel> reserva = new ArrayList<>();
 
+    public QuartoModel(Long id, Long numero, boolean disponibilidade) {
+        this.id = id;
+        this.numero = numero;
+        this.disponibilidade = disponibilidade;
+    }
+
     public Long getId() {
         return id;
     }

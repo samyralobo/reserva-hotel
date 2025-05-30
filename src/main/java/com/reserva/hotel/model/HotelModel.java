@@ -26,6 +26,11 @@ public class HotelModel {
     @OneToMany(mappedBy = "hotel")
     private List<ReservaModel> reservas;
 
+    public HotelModel(Long id, String nomeHotel, String endereco){
+        this.id = id;
+        this.nomeHotel = nomeHotel;
+        this.endereco = endereco;
+    }
 
     public Long getId() {
         return id;

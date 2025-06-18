@@ -1,10 +1,14 @@
 package com.reserva.hotel.model;
 
 import jakarta.persistence.*;
+import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Entity
 @Table(name = "TB_RESERVA")
 public class ReservaModel {
@@ -32,14 +36,6 @@ public class ReservaModel {
     @ManyToOne
     @JoinColumn(name = "hotel_id")
     private HotelModel hotel;
-
-    public ReservaModel(Long id, String nomeCliente, String email, LocalDateTime dataEntrada, LocalDateTime dataSaida) {
-        this.id = id;
-        this.nomeCliente = nomeCliente;
-        this.email = email;
-        this.dataEntrada = dataEntrada;
-        this.dataSaida = dataSaida;
-    }
 
     public Long getId() {
         return id;

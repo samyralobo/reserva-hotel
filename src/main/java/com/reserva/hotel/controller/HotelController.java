@@ -1,13 +1,16 @@
 package com.reserva.hotel.controller;
 
-import com.reserva.hotel.model.HotelModel;
+import com.reserva.hotel.dto.CadastrarHotelDTO;
+import com.reserva.hotel.dto.DeletarHotelDTO;
+import com.reserva.hotel.dto.ListarHotelDTO;
+import com.reserva.hotel.dto.UpdateHotelDTO;
 import com.reserva.hotel.service.HotelService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.stream.Stream;
 
 @RestController
 @RequestMapping("/hoteis")
@@ -15,13 +18,27 @@ public class HotelController {
     @Autowired
     private HotelService hotelService;
 
-    @PostMapping("/cadastro-hotel")
-    public HotelModel cadastroHotel(@RequestBody HotelModel hotel){
-        return hotelService.cadastrarHotel(hotel);
+    @PostMapping()
+    public ResponseEntity<CadastrarHotelDTO> cadastrarHotel(@RequestBody CadastrarHotelDTO cadastrarHotelDTO){
+        hotelService.cadastrarHotel(cadastrarHotelDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-    @GetMapping("/listagem-hoteis")
-    public List<HotelModel> listarHoteis(){
-        return hotelService.listarHoteis();
+    @GetMapping()
+    public ResponseEntity<Stream<ListarHotelDTO>> listarHoteis(){
+        Stream<ListarHotelDTO> hotel = hotelService.listarHoteis();
+        return ResponseEntity.ok().body(hotel);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<DeletarHotelDTO> deletarHotel(@PathVariable("id") long id){
+        hotelService.deletarHotel(id);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<UpdateHotelDTO> updateHotel(@PathVariable("id") Long id, @RequestBody UpdateHotelDTO hotelDTO){
+        hotelService.updateHotel(id, hotelDTO);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

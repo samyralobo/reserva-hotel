@@ -1,12 +1,15 @@
 package com.reserva.hotel.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
+//@Data
+//@NoArgsConstructor
+//@AllArgsConstructor
+//@Builder
 @Entity
 @Table(name = "TB_HOTEL")
 public class HotelModel {
@@ -25,12 +28,6 @@ public class HotelModel {
 
     @OneToMany(mappedBy = "hotel")
     private List<ReservaModel> reservas;
-
-    public HotelModel(Long id, String nomeHotel, String endereco){
-        this.id = id;
-        this.nomeHotel = nomeHotel;
-        this.endereco = endereco;
-    }
 
     public Long getId() {
         return id;
@@ -56,5 +53,19 @@ public class HotelModel {
         this.endereco = endereco;
     }
 
+    public List<QuartoModel> getQuartos() {
+        return quartos;
+    }
 
+    public void setQuartos(List<QuartoModel> quartos) {
+        this.quartos = quartos;
+    }
+
+    public List<ReservaModel> getReservas() {
+        return reservas;
+    }
+
+    public void setReservas(List<ReservaModel> reservas) {
+        this.reservas = reservas;
+    }
 }

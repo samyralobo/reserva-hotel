@@ -1,6 +1,8 @@
 package com.reserva.hotel.service;
 
-import com.reserva.hotel.model.HotelModel;
+import com.reserva.hotel.Exception.Exceptions.HotelNaoEncontradoException;
+import com.reserva.hotel.Exception.Exceptions.QuartoNaoExistnteException;
+import com.reserva.hotel.dto.ListarReservasDTO;
 import com.reserva.hotel.model.QuartoModel;
 import com.reserva.hotel.model.ReservaModel;
 import com.reserva.hotel.repository.HotelRepository;
@@ -11,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @Service
 public class ReservaService {
@@ -24,26 +27,32 @@ public class ReservaService {
     @Autowired
     private QuartoRepository quartoRepository;
 
-    public ReservaModel reservarQuarto(Long id_quarto, Long id_hotel, ReservaModel reserva){
 
-        Optional<HotelModel> hotel = hotelRepository.findById(id_hotel);
-        if (hotel.isPresent()){
-            Optional<QuartoModel> quarto = quartoRepository.findById(id_quarto);
+    public ReservaModel reservarQuarto(QuartoModel quarto, Long id_hotel){
+        boolean hotel = hotelRepository.existsById(id_hotel);
 
-            if (quarto.isPresent()){
-                reserva.setQuarto(quarto.get());
-            }else {
-                System.out.println("ERRO! Quarto indisponível!");
-            }
-
-        }else {
-            System.out.println("ERRO! Hotel não encontrado.");
+        if (!hotel){
+            throw new HotelNaoEncontradoException("Hotel não encontrado");
         }
 
-        return reservaRepository.save(reserva);
+        Optional<QuartoModel> quartoModelOptional = Optional.ofNullable((QuartoModel) quartoRepository.findByDisponivel(quarto.getDisponivel()).
+                orElseThrow(() -> new QuartoNaoExistnteException("Quarto não encontrado")));
+
+        QuartoModel quartoEntity = new QuartoModel();
+        quartoEntity.setDisponivel(false);
+
+        quartoRepository.save(quartoEntity);
+
+        ReservaModel quartoReservado = new ReservaModel();
+        quartoReservado.setQuarto(quartoEntity);
+
+        return reservaRepository.save(quartoReservado);
+
     }
 
-    public List<ReservaModel> listarReservas(){
-        return reservaRepository.findAll();
+    public Stream<ListarReservasDTO> listarReservas(){
+        List<ReservaModel> reservaModels = reservaRepository.findAll();
+        return reservaModels.stream().map(reserva -> new ListarReservasDTO(reserva.getNomeCliente(),
+                reserva.getDataEntrada(),reserva.getDataSaida(), reserva.getQuarto(), reserva.getHotel()));
     }
 }

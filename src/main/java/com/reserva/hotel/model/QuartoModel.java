@@ -1,11 +1,15 @@
 package com.reserva.hotel.model;
 
 import jakarta.persistence.*;
-import org.w3c.dom.ls.LSInput;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
+//@Data
+//@NoArgsConstructor
+//@AllArgsConstructor
+//@Builder
 @Entity
 @Table(name = "TB_QUARTO")
 public class QuartoModel {
@@ -15,10 +19,10 @@ public class QuartoModel {
     private Long id;
 
     @Column(nullable = false, unique = true, length = 100)
-    private long numero;
+    private Long numero;
 
     @Column(nullable = false)
-    private boolean disponibilidade;
+    private Boolean disponivel;
 
     @ManyToOne
     @JoinColumn(name = "hotel_id")
@@ -26,12 +30,6 @@ public class QuartoModel {
 
     @OneToMany(mappedBy = "quarto", cascade = CascadeType.ALL)
     private List<ReservaModel> reserva = new ArrayList<>();
-
-    public QuartoModel(Long id, Long numero, boolean disponibilidade) {
-        this.id = id;
-        this.numero = numero;
-        this.disponibilidade = disponibilidade;
-    }
 
     public Long getId() {
         return id;
@@ -41,20 +39,20 @@ public class QuartoModel {
         this.id = id;
     }
 
-    public long getNumero() {
+    public Long getNumero() {
         return numero;
     }
 
-    public void setNumero(long numero) {
+    public void setNumero(Long numero) {
         this.numero = numero;
     }
 
-    public boolean isDisponibilidade() {
-        return disponibilidade;
+    public Boolean getDisponivel() {
+        return disponivel;
     }
 
-    public void setDisponibilidade(boolean disponibilidade) {
-        this.disponibilidade = disponibilidade;
+    public void setDisponivel(Boolean disponivel) {
+        this.disponivel = disponivel;
     }
 
     public HotelModel getHotel() {
@@ -72,6 +70,4 @@ public class QuartoModel {
     public void setReserva(List<ReservaModel> reserva) {
         this.reserva = reserva;
     }
-
-
 }

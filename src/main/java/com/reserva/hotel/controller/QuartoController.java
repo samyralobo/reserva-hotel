@@ -1,14 +1,16 @@
 package com.reserva.hotel.controller;
 
-import com.reserva.hotel.dto.*;
+import com.reserva.hotel.dto.RequestDTO.AdicionarQuartoDTO;
+import com.reserva.hotel.dto.RequestDTO.DeletarQuartoDTO;
+import com.reserva.hotel.dto.RequestDTO.UpdateQuartoDTO;
+import com.reserva.hotel.dto.ResponseDTO.ListarQuartosDTO;
 import com.reserva.hotel.service.QuartoService;
-import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.stream.Stream;
+import java.util.List;
 
 @RestController
 @RequestMapping("/quartos")
@@ -16,27 +18,31 @@ public class QuartoController {
     @Autowired
     private QuartoService quartoService;
 
-    @GetMapping()
-    public ResponseEntity<Stream<ListarQuartosDTO>> listarQuartos() {
-        Stream<ListarQuartosDTO> listagem = quartoService.listarQuartos();
-        return ResponseEntity.ok().body(listagem);
+    @GetMapping("/{id}")
+    public ResponseEntity<List<ListarQuartosDTO>> listarQuartosNoHotel(@PathVariable("id") Long id) {
+        List<ListarQuartosDTO> listar= quartoService.listarQuartosNoHotel(id);
+        return ResponseEntity.ok().body(listar);
     }
 
-    @PostMapping()
-    public ResponseEntity<AdicionarQuartoDTO> adicionarQuarto (@RequestBody AdicionarQuartoDTO adicionarQuartoDTO){
-        quartoService.adicionarQuarto(adicionarQuartoDTO);
+    @PostMapping("/{id}")
+    public ResponseEntity<AdicionarQuartoDTO> adicionarQuarto (@RequestBody AdicionarQuartoDTO dto,
+                                                               @PathVariable("id") Long id){
+        quartoService.adicionarQuarto(dto, id);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<DeletarQuartoDTO> deletarQuarto(@PathVariable("id") Long id){
-        quartoService.deletarQuarto(id);
+    @DeleteMapping("/{quartoId}/{hotelId}")
+    public ResponseEntity<DeletarQuartoDTO> deletarQuarto(@PathVariable("quartoId") Long quartoId,
+                                                          @PathVariable("hotelId") Long hotelId){
+        quartoService.deletarQuarto(quartoId, hotelId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-    @PutMapping()
-    public ResponseEntity<UpdateQuartoDTO> updateQuarto(@PathVariable("id") Long id, @RequestBody UpdateQuartoDTO updateQuartoDTO){
-        quartoService.updateQuarto(id, updateQuartoDTO);
+    @PutMapping("/{quartoId}/{hotelId}")
+    public ResponseEntity<UpdateQuartoDTO> updateQuarto(@PathVariable("quartoId") Long quartoId,
+                                                        @PathVariable("hotelId") Long hotelId,
+                                                        @RequestBody UpdateQuartoDTO dto){
+        quartoService.updateQuarto(quartoId, hotelId, dto);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }

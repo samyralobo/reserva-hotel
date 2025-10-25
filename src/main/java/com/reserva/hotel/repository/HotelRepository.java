@@ -4,7 +4,10 @@ import com.reserva.hotel.model.HotelModel;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface HotelRepository extends JpaRepository<HotelModel, Long> {
-    HotelModel findByNomeHotel(String s);
+    Optional<HotelModel> findByNomeHotel(String s);
+
+   Optional<List<HotelModel>> findByQuartos(HotelModel hotel);
 }

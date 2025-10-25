@@ -1,9 +1,6 @@
 package com.reserva.hotel.Exception;
 
-import com.reserva.hotel.Exception.Exceptions.HotelExistenteException;
-import com.reserva.hotel.Exception.Exceptions.HotelNaoEncontradoException;
-import com.reserva.hotel.Exception.Exceptions.QuartoExistenteException;
-import com.reserva.hotel.Exception.Exceptions.QuartoNaoExistnteException;
+import com.reserva.hotel.Exception.CustomExceptions.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -30,5 +27,25 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(QuartoNaoExistnteException.class)
     private ResponseEntity<String> quartoNaoExistenteHandler(QuartoNaoExistnteException exception){
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getMessage());
+    }
+
+   @ExceptionHandler(QuartoJaCadastradoException.class)
+    private ResponseEntity<String> quartoJaCadastradoHandler(QuartoJaCadastradoException exception){
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(exception.getMessage());
+   }
+
+   @ExceptionHandler(UserJaCadastradoException.class)
+    private ResponseEntity<String> userJaCadastradoHandler(UserJaCadastradoException exception){
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(exception.getMessage());
+   }
+
+   @ExceptionHandler(UsuarioNaoEncontradoException.class)
+    private ResponseEntity<String> usuarioNaoEncontradoHandler(UsuarioNaoEncontradoException exception){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getMessage());
+    }
+
+    @ExceptionHandler(QuartoNaoDisponivelException.class)
+    private ResponseEntity<String> quartoNaoDisponivelHandler(QuartoNaoDisponivelException exception){
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(exception.getMessage());
     }
 }

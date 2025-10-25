@@ -1,17 +1,18 @@
 package com.reserva.hotel.service;
 
-import com.reserva.hotel.Exception.Exceptions.QuartoExistenteException;
-import com.reserva.hotel.Exception.Exceptions.QuartoNaoExistnteException;
-import com.reserva.hotel.dto.AdicionarQuartoDTO;
-import com.reserva.hotel.dto.ListarQuartosDTO;
-import com.reserva.hotel.dto.UpdateQuartoDTO;
+import com.reserva.hotel.Exception.CustomExceptions.HotelNaoEncontradoException;
+import com.reserva.hotel.Exception.CustomExceptions.QuartoJaCadastradoException;
+import com.reserva.hotel.Exception.CustomExceptions.QuartoNaoExistnteException;
+import com.reserva.hotel.dto.RequestDTO.AdicionarQuartoDTO;
+import com.reserva.hotel.dto.ResponseDTO.ListarQuartosDTO;
+import com.reserva.hotel.dto.RequestDTO.UpdateQuartoDTO;
+import com.reserva.hotel.model.HotelModel;
 import com.reserva.hotel.model.QuartoModel;
+import com.reserva.hotel.repository.HotelRepository;
 import com.reserva.hotel.repository.QuartoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Stream;
 
 @Service
 public class QuartoService {
@@ -19,50 +20,61 @@ public class QuartoService {
     @Autowired
     private QuartoRepository quartoRepository;
 
-    public Stream<ListarQuartosDTO> listarQuartos(){
-        List<QuartoModel> quartoEntity = quartoRepository.findAll();
-        return quartoEntity.stream().map(quarto -> new ListarQuartosDTO(quarto.getId(), quarto.getNumero(),
-                quarto.getDisponivel(), quarto.getHotel(), quarto.getReserva()));
+    @Autowired
+    private HotelRepository hotelRepository;
+
+    public AdicionarQuartoDTO adicionarQuarto(AdicionarQuartoDTO dto, Long hotelId){
+        HotelModel hotel = hotelRepository.findById(hotelId)
+                .orElseThrow(()-> new HotelNaoEncontradoException("Hotel não encontrado"));
+
+//        quartoRepository.findByNumeroAndHotelId(dto.numero(), hotelId).ifPresent(quarto ->
+//        {throw new QuartoJaCadastradoException("Quarto já cadastrado no hotel");});
+
+        QuartoModel quartoEntity = new QuartoModel();
+        quartoEntity.setNumero(dto.numero());
+        quartoEntity.setDisponivel(dto.disponivel());
+        quartoEntity.setHotel(hotel);
+
+        quartoRepository.save(quartoEntity);
+        return dto;
     }
 
-    public AdicionarQuartoDTO adicionarQuarto(AdicionarQuartoDTO adicionarQuartoDTO){
-        QuartoModel quarto = quartoRepository.findByNumero(adicionarQuartoDTO.numero());
+    public void deletarQuarto(Long quartoId, Long hotelId){
+        HotelModel hotel = hotelRepository.findById(hotelId)
+                .orElseThrow(()-> new HotelNaoEncontradoException("Hotel não encontrado!"));
 
-        if (quarto != null){
-            throw new QuartoExistenteException("Quarto já cadastrado");
-        }
+        boolean quartoExiste = quartoRepository.existsById(quartoId);
 
-        quarto.setId(adicionarQuartoDTO.id());
-        quarto.setNumero(adicionarQuartoDTO.numero());
-        quarto.setHotel(adicionarQuartoDTO.hotel());
-        quarto.setDisponivel(adicionarQuartoDTO.disponivel());
-        quarto.setReserva(adicionarQuartoDTO.reserva());
-
-        return adicionarQuartoDTO;
-    }
-
-    public void deletarQuarto(Long id){
-        Optional<QuartoModel> quartoId = quartoRepository.findById(id);
-
-        if (quartoId.isEmpty()){
+        if (!quartoExiste){
             throw new QuartoNaoExistnteException("Quarto não encontrado.");
         }
 
-        QuartoModel quartoEntity = new QuartoModel();
-        quartoEntity.setId(quartoId.get().getId());
-        quartoRepository.delete(quartoEntity);
+        quartoRepository.deleteById(quartoId);
     }
 
-    public void updateQuarto(Long id, UpdateQuartoDTO updateQuartoDTO){
-        QuartoModel quarto = quartoRepository.findById(id).orElseThrow(() ->
+    public void updateQuarto(Long quartoId, Long hotelId, UpdateQuartoDTO updateQuartoDTO){
+        HotelModel hotel = hotelRepository.findById(hotelId).orElseThrow(()->
+                new HotelNaoEncontradoException("Hotel não encontrado"));
+
+        QuartoModel quarto = quartoRepository.findById(quartoId).orElseThrow(() ->
                 new QuartoNaoExistnteException("Quarto não encontrado"));
 
-        quarto.setId(updateQuartoDTO.id());
         quarto.setNumero(updateQuartoDTO.numero());
         quarto.setDisponivel(updateQuartoDTO.disponivel());
-        quarto.setHotel(updateQuartoDTO.hotel());
+        quarto.setHotel(hotel);
         quarto.setReserva(updateQuartoDTO.reserva());
+
+        quartoRepository.save(quarto);
     }
 
+    public List<ListarQuartosDTO> listarQuartosNoHotel(Long id) {
+        HotelModel hotel = hotelRepository.findById(id)
+                .orElseThrow(() -> new HotelNaoEncontradoException("Hotel não encontrado"));
 
+        List<QuartoModel> quartos = hotel.getQuartos();
+
+        return quartos.stream().map(quarto-> new ListarQuartosDTO(
+                quarto.getId(), quarto.getNumero(), quarto.getDisponivel()))
+                .toList();
+    }
 }

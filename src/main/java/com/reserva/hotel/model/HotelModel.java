@@ -1,15 +1,16 @@
 package com.reserva.hotel.model;
 
+import com.reserva.hotel.model.Embeddable.Endereco;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
-//@Data
-//@NoArgsConstructor
-//@AllArgsConstructor
-//@Builder
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Entity
 @Table(name = "TB_HOTEL")
 public class HotelModel {
@@ -20,52 +21,10 @@ public class HotelModel {
     @Column(nullable = false, length = 30)
     private String nomeHotel;
 
-    @Column(nullable = false, length = 50)
-    private String endereco;
-
-    @OneToMany(mappedBy = "hotel", cascade = CascadeType.ALL)
-    private List<QuartoModel> quartos = new ArrayList<>();
+    @Embedded
+    private Endereco endereco;
 
     @OneToMany(mappedBy = "hotel")
-    private List<ReservaModel> reservas;
+    private List<QuartoModel> quartos = new ArrayList<>();
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getNomeHotel() {
-        return nomeHotel;
-    }
-
-    public void setNomeHotel(String nomeHotel) {
-        this.nomeHotel = nomeHotel;
-    }
-
-    public String getEndereco() {
-        return endereco;
-    }
-
-    public void setEndereco(String endereco) {
-        this.endereco = endereco;
-    }
-
-    public List<QuartoModel> getQuartos() {
-        return quartos;
-    }
-
-    public void setQuartos(List<QuartoModel> quartos) {
-        this.quartos = quartos;
-    }
-
-    public List<ReservaModel> getReservas() {
-        return reservas;
-    }
-
-    public void setReservas(List<ReservaModel> reservas) {
-        this.reservas = reservas;
-    }
 }

@@ -6,20 +6,25 @@ import lombok.*;
 import java.util.ArrayList;
 import java.util.List;
 
-//@Data
-//@NoArgsConstructor
-//@AllArgsConstructor
-//@Builder
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Entity
 @Table(name = "TB_QUARTO")
+//        uniqueConstraints = {@UniqueConstraint(name = "UniqueNumeroHotel",
+//        columnNames = {"numero", "hotel_id"})})
+//the name of the columns have to be the same in the db, in "joinColumn" I put "hotel_id", so the name in
+//uniqueConstraints has to be the same
+
 public class QuartoModel {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true, length = 100)
-    private Long numero;
+    @Column(nullable = false, length = 100)
+    private Integer numero;
 
     @Column(nullable = false)
     private Boolean disponivel;
@@ -28,46 +33,7 @@ public class QuartoModel {
     @JoinColumn(name = "hotel_id")
     private HotelModel hotel;
 
-    @OneToMany(mappedBy = "quarto", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "quarto")
     private List<ReservaModel> reserva = new ArrayList<>();
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Long getNumero() {
-        return numero;
-    }
-
-    public void setNumero(Long numero) {
-        this.numero = numero;
-    }
-
-    public Boolean getDisponivel() {
-        return disponivel;
-    }
-
-    public void setDisponivel(Boolean disponivel) {
-        this.disponivel = disponivel;
-    }
-
-    public HotelModel getHotel() {
-        return hotel;
-    }
-
-    public void setHotel(HotelModel hotel) {
-        this.hotel = hotel;
-    }
-
-    public List<ReservaModel> getReserva() {
-        return reserva;
-    }
-
-    public void setReserva(List<ReservaModel> reserva) {
-        this.reserva = reserva;
-    }
 }

@@ -1,68 +1,83 @@
 package com.reserva.hotel.service;
 
-import com.reserva.hotel.Exception.Exceptions.HotelExistenteException;
-import com.reserva.hotel.Exception.Exceptions.HotelNaoEncontradoException;
-import com.reserva.hotel.dto.CadastrarHotelDTO;
-import com.reserva.hotel.dto.ListarHotelDTO;
-import com.reserva.hotel.dto.UpdateHotelDTO;
+import com.reserva.hotel.Exception.CustomExceptions.HotelExistenteException;
+import com.reserva.hotel.Exception.CustomExceptions.HotelNaoEncontradoException;
+import com.reserva.hotel.dto.RequestDTO.CadastrarHotelDTO;
+import com.reserva.hotel.dto.RequestDTO.UpdateHotelDTO;
+import com.reserva.hotel.dto.ResponseDTO.GetHotelByIdDTO;
+import com.reserva.hotel.dto.ResponseDTO.ListarHotelDTO;
+import com.reserva.hotel.dto.ResponseDTO.QuartoDTO;
 import com.reserva.hotel.model.HotelModel;
 import com.reserva.hotel.repository.HotelRepository;
+import com.reserva.hotel.repository.QuartoRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Stream;
+import java.util.stream.Collectors;
 
 @Service
 public class HotelService {
     @Autowired
     private HotelRepository hotelRepository;
 
+    @Autowired
+    private QuartoRepository quartoRepository;
 
-    public CadastrarHotelDTO cadastrarHotel(CadastrarHotelDTO cadastrarHotelDTO){
-        HotelModel hotel = hotelRepository.findByNomeHotel(cadastrarHotelDTO.nomeHotel());
+    @Transactional
+    public CadastrarHotelDTO cadastrarHotel(CadastrarHotelDTO dto){
+        hotelRepository.findByNomeHotel(dto.nomeHotel())
+                .ifPresent(hotel-> {throw new HotelExistenteException("Hotel já cadastrado");});
 
-        if (hotel != null){
-            throw new HotelExistenteException("Hotel já cadastrado");
-        }
+        HotelModel hotelEntity = new HotelModel();
+        hotelEntity.setNomeHotel(dto.nomeHotel());
+        hotelEntity.setEndereco(dto.endereco());
 
-        hotel.setId(cadastrarHotelDTO.id());
-        hotel.setNomeHotel(cadastrarHotelDTO.nomeHotel());
-        hotel.setEndereco(cadastrarHotelDTO.endereco());
-
-        hotelRepository.save(hotel);
-        return cadastrarHotelDTO;
+        hotelRepository.save(hotelEntity);
+        return dto;
     }
 
-
-    public Stream<ListarHotelDTO> listarHoteis(){
+    public List<ListarHotelDTO> listarHoteis(){
         List<HotelModel> hotelEntity = hotelRepository.findAll();
-        return hotelEntity.stream().map(hotel -> new ListarHotelDTO(hotel.getId(), hotel.getNomeHotel(),
-                hotel.getEndereco()));
+
+        return hotelEntity.stream().map(
+                hotel ->
+                        new ListarHotelDTO(hotel.getId(),
+                        hotel.getNomeHotel(),
+                        hotel.getEndereco())).collect(Collectors.toList());
     }
 
+    public GetHotelByIdDTO getHotelById(Long id){
+        HotelModel hotel = hotelRepository.findById(id)
+                .orElseThrow(()-> new HotelNaoEncontradoException("Hotel não encontrado."));
+
+        return new GetHotelByIdDTO(hotel.getNomeHotel(),
+                hotel.getEndereco(),
+                hotel.getQuartos()
+                        .stream().map(quarto ->
+                                new QuartoDTO( quarto.getId(),
+                                        quarto.getNumero(), quarto.getDisponivel()))
+                        .collect(Collectors.toList()));
+    }
+
+    @Transactional
     public void deletarHotel(Long id){
-        Optional<HotelModel> hotel = hotelRepository.findById(id);
+        HotelModel hotel = hotelRepository.findById(id)
+                .orElseThrow(()-> new HotelNaoEncontradoException("Hotel não encontrado."));
 
-        if (hotel.isEmpty()){
-            throw new HotelNaoEncontradoException("Hotel não encontrado");
-        }
+        quartoRepository.deleteAllByHotel(hotel);
 
-        HotelModel hotelModel = new HotelModel();
-        hotelModel.setId(hotel.get().getId());
-        hotelRepository.delete(hotelModel);
+        hotelRepository.delete(hotel);
     }
 
-    public void updateHotel(Long id, UpdateHotelDTO updateHotelDTO){
+    @Transactional
+    public void updateHotel(Long id, UpdateHotelDTO dto){
         HotelModel hotel = hotelRepository.findById(id).orElseThrow(()
-                -> new HotelNaoEncontradoException("Hotel não encontrado"));
+                -> new HotelNaoEncontradoException("Hotel não encontrado."));
 
-        hotel.setId(updateHotelDTO.id());
-        hotel.setNomeHotel(updateHotelDTO.nomeHotel());
-        hotel.setEndereco(updateHotelDTO.endereco());
-        hotel.setQuartos(updateHotelDTO.quartos());
-        hotel.setReservas(updateHotelDTO.reservas());
+        hotel.setNomeHotel(dto.nomeHotel());
+        hotel.setEndereco(dto.endereco());
 
         hotelRepository.save(hotel);
     }

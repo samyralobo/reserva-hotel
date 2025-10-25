@@ -1,19 +1,21 @@
 package com.reserva.hotel.service;
 
-import com.reserva.hotel.Exception.Exceptions.HotelNaoEncontradoException;
-import com.reserva.hotel.Exception.Exceptions.QuartoNaoExistnteException;
-import com.reserva.hotel.dto.ListarReservasDTO;
+import com.reserva.hotel.Exception.CustomExceptions.QuartoNaoDisponivelException;
+import com.reserva.hotel.Exception.CustomExceptions.QuartoNaoExistnteException;
+import com.reserva.hotel.Exception.CustomExceptions.UsuarioNaoEncontradoException;
+import com.reserva.hotel.dto.ResponseDTO.ListarReservasDTO;
+import com.reserva.hotel.dto.RequestDTO.ReservarQuartoDTO;
 import com.reserva.hotel.model.QuartoModel;
 import com.reserva.hotel.model.ReservaModel;
-import com.reserva.hotel.repository.HotelRepository;
+import com.reserva.hotel.model.User;
 import com.reserva.hotel.repository.QuartoRepository;
 import com.reserva.hotel.repository.ReservaRepository;
+import com.reserva.hotel.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Stream;
 
 @Service
 public class ReservaService {
@@ -22,37 +24,44 @@ public class ReservaService {
     private ReservaRepository reservaRepository;
 
     @Autowired
-    private HotelRepository hotelRepository;
-
-    @Autowired
     private QuartoRepository quartoRepository;
 
+    @Autowired
+    private UserRepository userRepository;
 
-    public ReservaModel reservarQuarto(QuartoModel quarto, Long id_hotel){
-        boolean hotel = hotelRepository.existsById(id_hotel);
+    @Transactional
+    public ReservarQuartoDTO reservarQuarto(ReservarQuartoDTO dto,
+                                            long quartoId,
+                                            long userId){
+        QuartoModel quarto = quartoRepository.findById(quartoId)
+                .orElseThrow(()-> new QuartoNaoExistnteException("Quarto não encontrado"));
 
-        if (!hotel){
-            throw new HotelNaoEncontradoException("Hotel não encontrado");
+        User user = userRepository.findById(userId)
+                .orElseThrow(()-> new UsuarioNaoEncontradoException("Usuário não encontrado."));
+
+        if(!quarto.getDisponivel()){
+            throw new QuartoNaoDisponivelException("Quarto não disponível.");
         }
 
-        Optional<QuartoModel> quartoModelOptional = Optional.ofNullable((QuartoModel) quartoRepository.findByDisponivel(quarto.getDisponivel()).
-                orElseThrow(() -> new QuartoNaoExistnteException("Quarto não encontrado")));
+        ReservaModel reserva = new ReservaModel();
+        quarto.setDisponivel(false);
+        reserva.setDataEntrada(dto.dataEntrada());
+        reserva.setDataSaida(dto.dataSaida());
+        reserva.setUser(user);
+        reserva.setQuarto(quarto);
 
-        QuartoModel quartoEntity = new QuartoModel();
-        quartoEntity.setDisponivel(false);
-
-        quartoRepository.save(quartoEntity);
-
-        ReservaModel quartoReservado = new ReservaModel();
-        quartoReservado.setQuarto(quartoEntity);
-
-        return reservaRepository.save(quartoReservado);
-
+        reservaRepository.save(reserva);
+        return dto;
     }
 
-    public Stream<ListarReservasDTO> listarReservas(){
-        List<ReservaModel> reservaModels = reservaRepository.findAll();
-        return reservaModels.stream().map(reserva -> new ListarReservasDTO(reserva.getNomeCliente(),
-                reserva.getDataEntrada(),reserva.getDataSaida(), reserva.getQuarto(), reserva.getHotel()));
+
+    public List<ListarReservasDTO> listarReservas(Long id){
+        QuartoModel quarto = quartoRepository.findById(id)
+                .orElseThrow(()-> new QuartoNaoExistnteException("Quarto não encontrado."));
+
+        List<ReservaModel> reserva = quarto.getReserva();
+
+        return reserva.stream().map(reservas -> new ListarReservasDTO(
+                reservas.getId(), reservas.getDataEntrada(), reservas.getDataSaida())).toList();
     }
 }
